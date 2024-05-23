@@ -198,6 +198,7 @@ window.onload = function() {
 <!-- Bootsrap JS na nagpapagana ng danger alert natin -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- For Charts -->
+
 <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 
 </body>

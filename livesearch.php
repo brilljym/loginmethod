@@ -1,63 +1,63 @@
 <?php
 require_once('classes/database.php');
 session_start();
-
+ 
 // Initialize the database connection
 $con = new database();
 $html = ''; // Initialize empty variable for user table content
-
+ 
 try {
     $connection = $con->opencon();
-
+ 
     // Check for connection error
     if (!$connection) {
         echo json_encode(['error' => 'Database connection failed.']);
         exit;
     }
-
+ 
     // Define the number of records per page
     $recordsPerPage = 2;
-
+ 
     // Get the current page number from the request, default to 1 if not set
     $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     $offset = ($currentPage - 1) * $recordsPerPage;
-
+ 
     // Get the total number of records
     $totalQuery = $connection->prepare("SELECT COUNT(*) AS total FROM users");
     $totalQuery->execute();
     $totalRecords = $totalQuery->fetch(PDO::FETCH_ASSOC)['total'];
     $totalPages = ceil($totalRecords / $recordsPerPage);
-
+ 
     // Fetch users for the current page
-    $query = $connection->prepare("SELECT users.user_id, users.user_firstname, users.user_lastname, users.user_birthday, users.user_sex, users.user_name, users.user_profile_picture, CONCAT(user_address.city, ', ', user_address.province) AS address FROM users INNER JOIN user_address ON users.user_id = user_address.user_id LIMIT :offset, :recordsPerPage");
+    $query = $connection->prepare("SELECT users.User_Id, users.firstname, users.lastname, users.birthday, users.sex, users.username, users.user_profile_picture, CONCAT(user_address.city, ', ', user_address.province) AS address FROM users INNER JOIN user_address ON users.User_Id = user_address.user_id LIMIT :offset, :recordsPerPage");
     $query->bindParam(':offset', $offset, PDO::PARAM_INT);
     $query->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
     $query->execute();
     $users = $query->fetchAll(PDO::FETCH_ASSOC);
-
+ 
     foreach ($users as $user) {
         $html .= '<tr>';
-        $html .= '<td>' . $user['user_id'] . '</td>';
+        $html .= '<td>' . $user['User_Id'] . '</td>';
         $html .= '<td><img src="' . htmlspecialchars($user['user_profile_picture']) . '" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;"></td>';
-        $html .= '<td>' . $user['user_firstname'] . '</td>';
-        $html .= '<td>' . $user['user_lastname'] . '</td>';
-        $html .= '<td>' . $user['user_birthday'] . '</td>';
-        $html .= '<td>' . $user['user_sex'] . '</td>';
-        $html .= '<td>' . $user['user_name'] . '</td>';
+        $html .= '<td>' . $user['firstname'] . '</td>';
+        $html .= '<td>' . $user['lastname'] . '</td>';
+        $html .= '<td>' . $user['birthday'] . '</td>';
+        $html .= '<td>' . $user['sex'] . '</td>';
+        $html .= '<td>' . $user['username'] . '</td>';
         $html .= '<td>' . $user['address'] . '</td>';
         $html .= '<td>'; // Action column
         $html .= '<form action="update.php" method="post" style="display: inline;">';
-        $html .= '<input type="hidden" name="id" value="' . $user['user_id'] . '">';
+        $html .= '<input type="hidden" name="id" value="' . $user['User_Id'] . '">';
         $html .= '<button type="submit" class="btn btn-primary btn-sm">Edit</button>';
         $html .= '</form>';
         $html .= '<form method="POST" style="display: inline;">';
-        $html .= '<input type="hidden" name="id" value="' . $user['user_id'] . '">';
+        $html .= '<input type="hidden" name="id" value="' . $user['User_Id'] . '">';
         $html .= '<input type="submit" name="delete" class="btn btn-danger btn-sm" value="Delete" onclick="return confirm(\'Are you sure you want to delete this user?\')">';
         $html .= '</form>';
         $html .= '</td>';
         $html .= '</tr>';
     }
-
+ 
     // Output the pagination HTML
     $paginationHtml = '';
     if ($totalPages > 1) {
@@ -74,12 +74,12 @@ try {
         }
         $paginationHtml .= '</ul></nav>';
     }
-
+ 
 } catch (PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
 ?>
-
+ 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -136,7 +136,7 @@ try {
 <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 <!-- script na nagpapagana ng live search -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
+ 
 <script>
     $(document).ready(function() {
         $('#search').on('keyup', function() {

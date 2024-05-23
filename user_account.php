@@ -1,3 +1,9 @@
+<?php
+session_start();
+
+if (empty($_SESSION['username'])) {   
+  header('location:login.php');}
+  ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -122,12 +128,12 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input type="text" class="form-control" id="firstName" name="first_name" value="<?php echo $_SESSION['first_name']; ?>" required>
+            <label for="firstname">First Name</label>
+            <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo $_SESSION['firstname']; ?>" required>
           </div>
           <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input type="text" class="form-control" id="lastName" name="last_name" value="<?php echo $_SESSION['last_name']; ?>" required>
+            <label for="lastname">Last Name</label>
+            <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo $_SESSION['lastname']; ?>" required>
           </div>
           <div class="form-group">
             <label for="birthday">Birthday</label>

@@ -160,6 +160,7 @@ function viewdata($id){
         users.sex,
         users.username, 
         users.password,
+        users.user_profile_picture,
         user_address.street,user_address.barangay,user_address.city,user_address.province
         
     FROM
@@ -210,6 +211,25 @@ function viewdata($id){
             return false;
 
         }
+    }
+    function validateCurrentPassword($userId, $currentPassword) {
+        // Open database connection
+        $con = $this->opencon();
+    
+        // Prepare the SQL query
+        $query = $con->prepare("SELECT password FROM users WHERE User_Id = ?");
+        $query->execute([$userId]);
+    
+        // Fetch the user data as an associative array
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+    
+        // If a user is found, verify the password
+        if ($user && password_verify($currentPassword, $user['password'])) {
+            return true;
+        }
+    
+        // If no user is found or password is incorrect, return false
+        return false;
     }
 
 

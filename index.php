@@ -14,7 +14,7 @@ if (empty($_SESSION['username'])) {
 if (isset( $_POST['delete'])) {
     $id = $_POST['id'];
     if ($con->delete($id)) {
-        header('location:index.php');
+        header('location:index.php?status=success');
     }else {
         echo "Something went wrong.";
     }
@@ -32,12 +32,13 @@ if (isset( $_POST['delete'])) {
   <title>Welcome!</title>
   <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
   <!-- Bootstrap CSS -->
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> 
   <!-- For Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <!-- foricons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="package/dist/sweetalert2.css">
 </head>
 <body>
   <?php include ('includes/navbar.php'); ?>
@@ -189,6 +190,7 @@ window.onload = function() {
   });
   expenseChart.render();
 }
+
 </script>
 <!-- Bootstrap JS and dependencies -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -200,6 +202,43 @@ window.onload = function() {
 <!-- For Charts -->
 
 <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+
+<script src="package/dist/sweetalert2.js"></script>
+
+
+<!-- Pop Up Messages after a succesful transaction starts here --> <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('status');
+
+  if (status) {
+    let title, text, icon;
+    switch (status) {
+      case 'success':
+        title = 'Success!';
+        text = 'Record is successfully deleted.';
+        icon = 'success';
+        break;
+      case 'error':
+        title = 'Error!';
+        text = 'Something went wrong.';
+        icon = 'error';
+        break;
+      default:
+        return;
+    }
+    Swal.fire({
+      title: title,
+      text: text,
+      icon: icon
+    }).then(() => {
+      // Remove the status parameter from the URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState(null, null, newUrl);
+    });
+  }
+});
+</script> <!-- Pop Up Messages after a succesful transaction ends here -->
 
 </body>
 </html>

@@ -12,16 +12,10 @@ if (isset($_POST['login'])) {
   $username = $_POST['username'];
   $password = $_POST['password'];
   $result = $con->check($username, $password);
- 
-  if ($result) {
-      $_SESSION['username'] = $result['username'];
-      header('location:index.php');
-  } else {
-      $error = "Incorrect username or password. Please try again.";
-  }
- 
+
   if ($result){
     $_SESSION['username'] = $result['username'];
+    $_SESSION['User_Id'] = $result['User_Id'];
     if ($result['account_type']==0){
       header('location:index.php');
   } else if ($result['account_type']== 1){

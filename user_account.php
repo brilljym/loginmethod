@@ -1,10 +1,29 @@
 <?php
 session_start();
-
+require_once('classes/database.php');
+$con=new database();
 if (empty($_SESSION['username'])) {   
   header('location:login.php');}
+  
+  if (isset($_POST['updatepassword'])) {
+    $userId = $_SESSION['User_Id'];
+    $currentPassword = $_POST['current_password'];
+    $newPassword = $_POST['new_password'];
+    $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+    
+    // Update the password in the database using the new method
+            if ($con->updatePassword($userId, $hashedPassword)) {
+                // Password updated successfully
+                header('Location: user_account.php?status=success');
+                exit();
+            } else {
+                // Failed to update password
+                header('Location: user_account.php?status=error');
+                exit();
+            }
+        
+    }  
   ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

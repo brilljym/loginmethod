@@ -1,44 +1,75 @@
 <?php
-session_start();
 require_once('classes/database.php');
-$con=new database();
-if (empty($_SESSION['username'])) {   
-  header('location:login.php');}
-  
-  if (isset($_POST['updatepassword'])) {
-    $userId = $_SESSION['User_Id'];
-    $currentPassword = $_POST['current_password'];
-    $newPassword = $_POST['new_password'];
-    $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
-    
-    // Update the password in the database using the new method
-            if ($con->updatePassword($userId, $hashedPassword)) {
-                // Password updated successfully
-                header('Location: user_account.php?status=success');
-                exit();
-            } else {
-                // Failed to update password
-                header('Location: user_account.php?status=error');
-                exit();
-            }
-        
-    }  
-  ?>
+$con = new Database();
+session_start();
+ 
+ 
+$id = $_SESSION['User_Id'];
+$data = $con->viewdata($id);
+ 
+if (isset($_POST['updatepassword'])) {
+  $userId = $_SESSION['User_Id'];
+  $currentPassword = $_POST['current_password'];
+  $newPassword = $_POST['new_password'];
+  $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+ 
+  // Update the password in the database using the new method
+          if ($con->updatePassword($userId, $hashedPassword)) {
+              // Password updated successfully
+              header('Location: user_account.php?status=success');
+              exit();
+          } else {
+              // Failed to update password
+              header('Location: user_account.php?status=error');
+              exit();
+          }
+     
+  }
+if (isset($_POST['updateaddress'])) {
+  $user_id = $id;
+  $street = $_POST['user_street'];
+  $barangay = $_POST['barangay_text'];
+  $city = $_POST['city_text'];
+  $province = $_POST['province_text'];
+ 
+  if($con->updateUserAddress($user_id, $street, $barangay, $city, $province)){
+    // Address updated successfully
+    header('Location: user_account.php?status=success1');
+    exit();
+  }else{
+    // Failed to update address
+    header('Location: user_account.php?status=error');
+    exit();
+  }
+}
+?>
+ 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome!</title>
-  <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
+ 
+  <!-- jQuery for Address Selector -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ 
   <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+ 
   <!-- For Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="includes/style.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+ 
+  <!-- For Pop Up Notification -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ 
+  <link rel="stylesheet" href="package/dist/sweetalert2.css">
+ 
+ 
   <style>
-   <style>
     .profile-header {
       text-align: center;
       margin: 20px 0;
@@ -66,14 +97,13 @@ if (empty($_SESSION['username'])) {
       padding: 20px;
     }
   </style>
-  </style>
 </head>
  <body>
-
+ 
 <?php include('includes/user_navbar.php'); ?>
-
+ 
 <div class="container my-3">
-
+ 
   <div class="row">
     <div class="col-md-12">
       <div class="profile-info">
@@ -81,9 +111,9 @@ if (empty($_SESSION['username'])) {
           <h3>Account Information</h3>
         </div>
         <div class="info-body">
-          <p><strong>First Name:</strong><?php echo $data['firstname'];?></p>
-          <p><strong>Last Name:</strong><?php echo $data['lastname'];?></p>
-          <p><strong>Birthday:</strong><?php echo $data['birthday'];?></p>
+          <p><strong>First Name:</strong> <?php echo $data['firstname'];?> </p>
+          <p><strong>Last Name:</strong> <?php echo $data['lastname'];?> </p>
+          <p><strong>Birthday:</strong> <?php echo $data['birthday'];?> </p>
         </div>
       </div>
     </div>
@@ -95,85 +125,20 @@ if (empty($_SESSION['username'])) {
           <h3>Address Information</h3>
         </div>
         <div class="info-body">
-          <p><strong>Street:</strong><?php echo $data['street'];?></p>
-          <p><strong>Barangay:</strong><?php echo $data['barangay'];?></p>
-          <p><strong>City:</strong><?php echo $data['city'];?></p>
-          <p><strong>Province:</strong><?php echo $data['province'];?></p>
-          
+          <p><strong>Street:</strong> <?php echo $data['street'];?> </p>
+          <p><strong>Barangay:</strong> <?php echo $data['barangay'];?> </p>
+          <p><strong>City:</strong> <?php echo $data['city'];?> </p>
+          <p><strong>Province:</strong> <?php echo $data['province'];?> </p>
+         
         </div>
       </div>
     </div>
   </div>
   </div>
 </div>
-
-
+ 
+ 
 <!-- Change Profile Picture Modal -->
-<div class="modal fade" id="changeProfilePictureModal" tabindex="-1" role="dialog" aria-labelledby="changeProfilePictureModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <form action="change_profile_picture.php" method="post" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="changeProfilePictureModalLabel">Change Profile Picture</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="profilePicture">Choose a new profile picture</label>
-            <input type="file" class="form-control" id="profilePicture" name="profile_picture" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Update Account Information Modal -->
-<div class="modal fade" id="updateAccountInfoModal" tabindex="-1" role="dialog" aria-labelledby="updateAccountInfoModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <form action="update_account_info.php" method="post">
-        <div class="modal-header">
-          <h5 class="modal-title" id="updateAccountInfoModalLabel">Update Account Information</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="firstname">First Name</label>
-            <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo $_SESSION['firstname']; ?>" required>
-          </div>
-          <div class="form-group">
-            <label for="lastname">Last Name</label>
-            <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo $_SESSION['lastname']; ?>" required>
-          </div>
-          <div class="form-group">
-            <label for="birthday">Birthday</label>
-            <input type="date" class="form-control" id="birthday" name="birthday" value="<?php echo $_SESSION['birthday']; ?>" required>
-          </div>
-          <div class="form-group">
-            <label for="address">Address</label>
-            <input type="text" class="form-control" id="address" name="address" value="<?php echo $_SESSION['address']; ?>" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Change Password Modal -->
-
     <!-- Modal for Profile Picture Upload -->
     <div class="modal fade" id="changeProfilePictureModal" tabindex="-1" role="dialog" aria-labelledby="changeProfilePictureModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -202,8 +167,8 @@ if (empty($_SESSION['username'])) {
         </div>
       </div>
     </div>
-
-
+ 
+ 
 <!-- Update Account Information Modal -->
 <div class="modal fade" id="updateAccountInfoModal" tabindex="-1" role="dialog" aria-labelledby="updateAccountInfoModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
@@ -259,12 +224,12 @@ if (empty($_SESSION['username'])) {
     <button type="submit" name="updateaddress" class="btn btn-primary">Save changes</button>
   </div>
 </form>
-
+ 
     </div>
   </div>
 </div>
-
-
+ 
+ 
 <!-- Modal for Change Password -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -277,13 +242,13 @@ if (empty($_SESSION['username'])) {
       </div>
       <div class="modal-body">
         <form id="changePasswordForm" method="POST">
-          
+         
         <div class="form-group">
           <label for="currentPassword">Current Password</label>
           <input type="password" class="form-control" id="currentPassword" name="current_password" required>
           <div id="currentPasswordFeedback" class="invalid-feedback"></div>
         </div>
-        
+       
         <div class="form-group">
           <label for="newPassword">New Password</label>
           <input type="password" class="form-control" id="newPassword" name="new_password" required readonly>
@@ -294,7 +259,7 @@ if (empty($_SESSION['username'])) {
           <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required readonly>
           <div id="confirmPasswordFeedback" class="invalid-feedback"></div>
         </div>
-        
+       
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary" name="updatepassword" id="saveChangesBtn" disabled>Save changes</button>
@@ -304,9 +269,9 @@ if (empty($_SESSION['username'])) {
     </div>
   </div>
 </div>
-
+ 
 </div>
-
+ 
 <!-- Password Validation Logic Starts Here --><script>
 document.addEventListener('DOMContentLoaded', function() {
     const currentPasswordInput = document.getElementById('currentPassword');
@@ -316,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentPasswordFeedback = document.getElementById('currentPasswordFeedback');
     const newPasswordFeedback = document.getElementById('newPasswordFeedback');
     const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
-
+ 
     currentPasswordInput.addEventListener('input', function() {
         const currentPassword = currentPasswordInput.value;
         if (currentPassword) {
@@ -331,14 +296,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentPasswordInput.classList.add('is-valid');
                     currentPasswordInput.classList.remove('is-invalid');
                     currentPasswordFeedback.textContent = '';
-
+ 
                     newPasswordInput.removeAttribute('readonly');
                     confirmPasswordInput.removeAttribute('readonly');
                 } else {
                     currentPasswordInput.classList.add('is-invalid');
                     currentPasswordInput.classList.remove('is-valid');
                     currentPasswordFeedback.textContent = 'Current password is incorrect.';
-
+ 
                     newPasswordInput.setAttribute('readonly', 'readonly');
                     confirmPasswordInput.setAttribute('readonly', 'readonly');
                 }
@@ -349,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentPasswordInput.classList.add('is-invalid');
                 currentPasswordInput.classList.remove('is-valid');
                 currentPasswordFeedback.textContent = 'An error occurred while verifying the current password.';
-
+ 
                 newPasswordInput.setAttribute('readonly', 'readonly');
                 confirmPasswordInput.setAttribute('readonly', 'readonly');
                 toggleSaveButton();
@@ -362,11 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSaveButton();
         }
     });
-
+ 
     newPasswordInput.addEventListener('input', function() {
         const newPassword = newPasswordInput.value;
         const currentPassword = currentPasswordInput.value;
-
+ 
         if (newPassword === currentPassword) {
             newPasswordInput.classList.add('is-invalid');
             newPasswordInput.classList.remove('is-valid');
@@ -383,18 +348,18 @@ document.addEventListener('DOMContentLoaded', function() {
         validateConfirmPassword(confirmPasswordInput);
         toggleSaveButton();
     });
-
+ 
     confirmPasswordInput.addEventListener('input', function() {
         validateConfirmPassword(confirmPasswordInput);
         toggleSaveButton();
     });
-
+ 
     function validatePassword(passwordInput) {
         const password = passwordInput.value;
         const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         return regex.test(password);
     }
-
+ 
     function validateConfirmPassword(confirmPasswordInput) {
         const password = newPasswordInput.value;
         const confirmPassword = confirmPasswordInput.value;
@@ -410,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
     }
-
+ 
     function toggleSaveButton() {
         if (currentPasswordInput.classList.contains('is-valid') && validatePassword(newPasswordInput) && validateConfirmPassword(confirmPasswordInput)) {
             saveChangesBtn.removeAttribute('disabled');
@@ -419,17 +384,184 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
-
+ 
 </script><!-- Password Validation Logic Ends Here -->
-<!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+ 
+<!-- SweetAlert2 Script For Pop Up Notification -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ 
+<!-- After the message is shown the whole website will be reloaded and the query parameters after the url will be removed so that the message only appear once. -->
+<!-- Pop Up Messages after a succesful transaction starts here --> <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('status');
+ 
+  if (status) {
+    let title, text, icon;
+    switch (status) {
+      case 'success':
+        title = 'Success!';
+        text = 'Password updated successfully.';
+        icon = 'success';
+        break;
+      case 'success1':
+        title = 'Success!';
+        text = 'Address was updated successfully.';
+        icon = 'success';
+        break;
+      case 'error':
+        title = 'Error!';
+        text = 'Something went wrong.';
+        icon = 'error';
+        break;
+      case 'nomatch':
+        title = 'Error!';
+        text = 'Passwords do not match.';
+        icon = 'error';
+        break;
+      default:
+        return;
+    }
+ 
+    Swal.fire({
+      title: title,
+      text: text,
+      icon: icon
+    }).then(() => {
+      // Remove the status parameter from the URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState(null, null, newUrl);
+    });
+  }
+});
+</script> <!-- Pop Up Messages after a succesful transaction ends here -->
+ 
+ 
+<!-- Change Profile Picture Logic Starts here --><script>
+    $(document).ready(function() {
+        $('#profilePictureInput').change(function() {
+            const file = this.files[0];
+            if (file) {
+                // Check file size
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'File size exceeds 5MB.',
+                        icon: 'error'
+                    });
+                    $('#imagePreview').hide();
+                    $('#uploadProfilePicForm').data('valid', false);
+                    return;
+                } else {
+                    $('#fileSizeError').hide();
+                    $('#uploadProfilePicForm').data('valid', true);
+                }
+ 
+                // Preview the image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#imagePreview').attr('src', e.target.result);
+                    $('#imagePreview').show();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+ 
+        $('#uploadProfilePicForm').submit(function(event) {
+            event.preventDefault();
+            if (!$(this).data('valid')) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'File size exceeds 5MB.',
+                    icon: 'error'
+                });
+                return;
+            }
+ 
+            const formData = new FormData(this);
+            $.ajax({
+                url: 'upload_profile_picture.php', // Change this to your PHP file
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        if (response.success) {
+                            $('#profilePicPreview').attr('src', response.filepath);
+                            $('#changeProfilePictureModal').modal('hide');
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Profile picture updated successfully.',
+                                icon: 'success'
+                            }).then(() => {
+                                // Reload the page after displaying the success message
+                                window.location.href = window.location.href.split('?')[0];
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.error,
+                                icon: 'error'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while processing the response.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while uploading the file.',
+                        icon: 'error'
+                    });
+                }
+            });
+        });
+    });
+    </script><!-- Change Profile Picture Logic Ends here -->
+ 
+<!-- For Address Selector Validation --><script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Fetch region, province, city, and barangay options dynamically if needed
+  // Example for adding event listeners for dynamic fetching
+  // document.getElementById('region').addEventListener('change', fetchProvinces);
+ 
+  // Example of a function to fetch provinces
+  // function fetchProvinces() {
+  //   const regionId = document.getElementById('region').value;
+  //   // Fetch provinces based on regionId
+  // }
+ 
+  // Form validation
+  var form = document.getElementById('updateAccountForm');
+  form.addEventListener('submit', function(event) {
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  }, false);
+});
+</script><!-- For Address Selector Validation -->
+ 
+ 
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<!-- Make Sure jquery3.6.0 is before the ph-address-selector.js -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="ph-address-selector.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="./bootstrap-5.3.3-dist/js/bootstrap.js"></script>
-<!-- Bootsrap JS na nagpapagana ng danger alert natin -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<!-- For Charts -->
-<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-
+ 
+<script src="package/dist/sweetalert2.js"></script>
+ 
+ 
 </body>
 </html>

@@ -20,6 +20,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 
         $target_file = $target_dir . $original_file_name;
     }
  
+   
     // Check file size
     if ($_FILES["profile_picture"]["size"] > 5 * 1024 * 1024) {
         $response['error'] = "File size exceeds 5MB.";
@@ -58,4 +59,3 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 
 }
  
 echo json_encode($response);
- 

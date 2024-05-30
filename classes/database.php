@@ -158,9 +158,9 @@ function viewdata($id){
         users.lastname,
         users.birthday,
         users.sex,
+        users.user_profile_picture,
         users.username, 
         users.password,
-        users.user_profile_picture,
         user_address.street,user_address.barangay,user_address.city,user_address.province
         
     FROM
@@ -212,27 +212,26 @@ function viewdata($id){
 
         }
     }
-    function validateCurrentPassword($userId, $currentPassword) {
+
+    function validateCurrentPassword($userId, $currentPassword){
         // Open database connection
         $con = $this->opencon();
-    
-        // Prepare the SQL query
+       
+        //Prepare the SQL query
         $query = $con->prepare("SELECT password FROM users WHERE User_Id = ?");
         $query->execute([$userId]);
-    
-        // Fetch the user data as an associative array
+         
+        // fetch the user data as an associative way
         $user = $query->fetch(PDO::FETCH_ASSOC);
-    
-        // If a user is found, verify the password
-        if ($user && password_verify($currentPassword, $user['password'])) {
+
+        // if a user is found, verify the password
+        if ($user && password_verify($currentPassword, $user['password'])){
+            // if no user is found or password is incorrect, return false
             return true;
         }
-    
-        // If no user is found or password is incorrect, return false
-        return false;
-    }
+      }
 
-    function updatePassword($userId, $hashedPassword){
+      function updatePassword($userId, $hashedPassword){
         try {
             $con = $this->opencon();
             $con->beginTransaction();
@@ -248,12 +247,12 @@ function viewdata($id){
         }
         }
 
-        function updateUserProfilePicture($userID, $profile_picture_path) {
+        function updateUserProfilePicture($userID, $profilePicturePath) {
             try {
                 $con = $this->opencon();
                 $con->beginTransaction();
                 $query = $con->prepare("UPDATE users SET user_profile_picture = ? WHERE User_Id = ?");
-                $query->execute([$profile_picture_path, $userID]);
+                $query->execute([$profilePicturePath, $userID]);
                 // Update successful
                 $con->commit();
                 return true;
@@ -263,4 +262,6 @@ function viewdata($id){
                 return false; // Update failed
             }
              }
-}
+   
+    }
+   
